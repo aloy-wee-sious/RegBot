@@ -22,6 +22,7 @@ public class RegBot extends TelegramLongPollingBot {
     private final String COMMAND_DELETE = "/delete";
     private final String COMMAND_HELP = "/help";
     private final String COMMAND_ADDME = "/addme";
+    private final String COMMAND_START = "/start";
 
     private ArrayList<User> seekApproval = new ArrayList<User>();
     private ArrayList<User> myUsers = new ArrayList<User>(Arrays.asList(new User("Aloysius", "Wang", (long)226481140), new User("fakeguy", null, (long)000000000)));
@@ -97,12 +98,15 @@ public class RegBot extends TelegramLongPollingBot {
                 System.out.println("view");
                 break;
             case COMMAND_HELP:
-                reply = COMMAND_HELP;
+                reply = UserCommands.help();
                 System.out.println("help");
                 break;
             case COMMAND_ADDME:
                 reply = COMMAND_ADDME;
                 System.out.println("addme");
+                break;
+            case COMMAND_START:
+                reply = UserCommands.start();
                 break;
             default:
                 reply = "invalid";
@@ -193,8 +197,10 @@ public class RegBot extends TelegramLongPollingBot {
             return COMMAND_HELP;
         }else if(reply.contains(COMMAND_VIEW)) {
             return COMMAND_VIEW;
-        }else if(reply.contains(ADMIN_HELP)){
+        }else if(reply.contains(ADMIN_HELP)) {
             return ADMIN_HELP;
+        }else if(reply.contains(COMMAND_START)){
+            return COMMAND_START;
         }else{
             return "invalid";
         }
