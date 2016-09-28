@@ -9,13 +9,13 @@ import java.util.Scanner;
 public class run {
 
     public static void main(String[] args) {
-        //Scanner sc = new Scanner(System.in);
-        //System.out.println("enter code");
-        //String input = sc.nextLine();
+        Scanner sc = new Scanner(System.in);
+        System.out.println("enter code");
+        String input = sc.nextLine();
 
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
         try {
-            telegramBotsApi.registerBot(new RegBot(System.getenv("CODE")));
+            telegramBotsApi.registerBot(new RegBot(input));
         } catch (TelegramApiException e) {
             System.out.println(e);
         }
