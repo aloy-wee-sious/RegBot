@@ -45,7 +45,6 @@ public class User {
         if (o == null || getClass() != o.getClass()) return false;
 
         User user = (User) o;
-
         return userId == user.userId;
 
     }
@@ -71,6 +70,10 @@ public class User {
         for(String request: PRequest){
             result = result + "    " + count + ". " + request + "\n";
             count++;
+        }
+
+        if(PRequest.isEmpty()){
+            result = result + "    No request submitted";
         }
         return result;
     }

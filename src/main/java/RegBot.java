@@ -38,6 +38,7 @@ public class RegBot extends TelegramLongPollingBot {
     private final String ADMIN_VIEW_REMIND = "/adminremind";
     private final String ADMIN_PUBLISH = "/adminpublish";
 
+    private final String ADMIN_NEWADMIN = "/adminnew";
     private final String ADMIN_HELP = "/adminhelp";
 
 
@@ -58,10 +59,10 @@ public class RegBot extends TelegramLongPollingBot {
                     System.out.println("is admin command " + isAdminCommand(formatText(message.getText())));
                     System.out.println("is admin " + isAdmin+"");
                     System.out.println(command);
-                    if(isAdminCommand(text) && isAdmin){
-                        reply = processAdminCommands(command);
+                    if(isAdminCommand(message.getText()) && isAdmin){
+                        reply = processAdminCommands(command, text);
                     }else{
-                        reply = processUserCommands(command, message.getFrom().getId(), text);
+                        reply = processUserCommands(command, message.getFrom().getId(), message.getFrom().getFirstName(), message.getFrom().getLastName(), text);
                     }
                     sendReply(message, sendMessage, reply);
                 } else if (message.isGroupMessage() && message.getText().contains("@ReggyBot")) {
@@ -79,7 +80,7 @@ public class RegBot extends TelegramLongPollingBot {
         return text.substring(text.indexOf(" ")+1,text.length());
     }
 
-    private String processUserCommands(String command, long id, String text) {
+    private String processUserCommands(String command, long id, String firstName, String lastName, String text) {
         String reply;
         switch(command) {
             case COMMAND_ADD:
@@ -102,6 +103,11 @@ public class RegBot extends TelegramLongPollingBot {
                 System.out.println("help");
                 break;
             case COMMAND_ADDME:
+                int before = seekApproval.size();
+                seekApproval = UserCommands.addme(myUsers, seekApproval, id, firstName, lastName);
+                if(before == seekApproval.size()){
+                    System.out.println("no change");
+                }
                 reply = COMMAND_ADDME;
                 System.out.println("addme");
                 break;
@@ -115,7 +121,7 @@ public class RegBot extends TelegramLongPollingBot {
         return reply;
     }
 
-    private String processAdminCommands(String command) {
+    private String processAdminCommands(String command, String text) {
         System.out.println("command is " + command);
         String reply;
         switch(command) {
@@ -155,6 +161,11 @@ public class RegBot extends TelegramLongPollingBot {
                 System.out.println("admin help");
                 reply = ADMIN_HELP;
                 break;
+            case ADMIN_NEWADMIN:
+                System.out.println("add new admin");
+                AdminCommands.addAdmin(myUsers, Integer.parseInt(text));
+                reply = AdminCommands.getAdmins().toString();
+                break;
             default:
                 reply = "invalid";
                 break;
@@ -170,39 +181,48 @@ public class RegBot extends TelegramLongPollingBot {
         }
     }
 
-    private String getCommand(String reply) {
-        if(reply.contains(COMMAND_ADDME)){
-            return COMMAND_ADDME;
-        }else if(reply.contains(ADMIN_ADD)){
-            return ADMIN_ADD;
-        }else if(reply.contains(ADMIN_PUBLISH)){
-            return ADMIN_PUBLISH;
-        }else if(reply.contains(ADMIN_REMOVE_PENDING)){
-            return ADMIN_REMOVE_PENDING;
-        }else if(reply.contains(ADMIN_REMOVE_USERS)){
-            return ADMIN_REMOVE_USERS;
-        }else if(reply.contains(ADMIN_VIEW_PENDING)){
-            return ADMIN_VIEW_PENDING;
-        }else if(reply.contains(ADMIN_VIEW_REMIND)){
-            return ADMIN_VIEW_REMIND;
-        }else if(reply.contains(ADMIN_VIEW_REQUEST)){
-            return ADMIN_VIEW_REQUEST;
-        }else if(reply.contains(ADMIN_VIEW_USERS)){
-            return ADMIN_VIEW_USERS;
-        }else if(reply.contains(COMMAND_ADD)){
-            return COMMAND_ADD;
-        }else if(reply.contains(COMMAND_DELETE)){
-            return COMMAND_DELETE;
-        }else if(reply.contains(COMMAND_HELP)) {
-            return COMMAND_HELP;
-        }else if(reply.contains(COMMAND_VIEW)) {
-            return COMMAND_VIEW;
-        }else if(reply.contains(ADMIN_HELP)) {
-            return ADMIN_HELP;
-        }else if(reply.contains(COMMAND_START)){
-            return COMMAND_START;
+    private String getCommand(String text) {
+
+        if((text.length() > "/admin".length() && text.substring(0,"/admin".length()).equals("/admin"))){
+            if(text.length() >= ADMIN_ADD.length() && text.substring(0, ADMIN_ADD.length()).equals(ADMIN_ADD)) {
+                return ADMIN_ADD;
+            }else if(text.length() >= ADMIN_PUBLISH.length() && text.substring(0, ADMIN_PUBLISH.length()).equals(ADMIN_PUBLISH)){
+                return ADMIN_PUBLISH;
+            }else if(text.length() >= ADMIN_REMOVE_PENDING.length() && text.substring(0, ADMIN_REMOVE_PENDING.length()).equals(ADMIN_REMOVE_PENDING)){
+                return ADMIN_REMOVE_PENDING;
+            }else if(text.length() >= ADMIN_REMOVE_USERS.length() && text.substring(0, ADMIN_REMOVE_USERS.length()).equals(ADMIN_REMOVE_USERS)){
+                return ADMIN_REMOVE_USERS;
+            }else if(text.length() >= ADMIN_VIEW_PENDING.length() && text.substring(0, ADMIN_VIEW_PENDING.length()).equals(ADMIN_VIEW_PENDING)){
+                return ADMIN_VIEW_PENDING;
+            }else if(text.length() >= ADMIN_VIEW_REMIND.length() && text.substring(0, ADMIN_VIEW_REMIND.length()).equals(ADMIN_VIEW_REMIND)){
+                return ADMIN_VIEW_REMIND;
+            }else if(text.length() >= ADMIN_VIEW_REQUEST.length() && text.substring(0, ADMIN_VIEW_REQUEST.length()).equals(ADMIN_VIEW_REQUEST)){
+                return ADMIN_VIEW_REQUEST;
+            }else if(text.length() >= ADMIN_VIEW_USERS.length() && text.substring(0, ADMIN_VIEW_USERS.length()).equals(ADMIN_VIEW_USERS)){
+                return ADMIN_VIEW_USERS;
+            }else if(text.length() >= ADMIN_HELP.length() && text.substring(0, ADMIN_HELP.length()).equals(ADMIN_HELP)){
+                return ADMIN_HELP;
+            }else if(text.length() >= ADMIN_NEWADMIN.length() && text.substring(0, ADMIN_NEWADMIN.length()).equals(ADMIN_NEWADMIN)) {
+                return ADMIN_NEWADMIN;
+            }else{
+                return "invalid";
+            }
         }else{
-            return "invalid";
+            if(text.length() >= COMMAND_ADDME.length() && text.substring(0, COMMAND_ADDME.length()).equals(COMMAND_ADDME)){
+                return COMMAND_ADDME;
+            }else if(text.length() >= COMMAND_ADD.length() && text.substring(0, COMMAND_ADD.length()).equals(COMMAND_ADD)){
+                return COMMAND_ADD;
+            }else if(text.length() >= COMMAND_DELETE.length() && text.substring(0, COMMAND_DELETE.length()).equals(COMMAND_DELETE)){
+                return COMMAND_DELETE;
+            }else if(text.length() >= COMMAND_HELP.length() && text.substring(0, COMMAND_HELP.length()).equals(COMMAND_HELP)){
+                return COMMAND_HELP;
+            }else if(text.length() >= COMMAND_VIEW.length() && text.substring(0, COMMAND_VIEW.length()).equals(COMMAND_VIEW)){
+                return COMMAND_VIEW;
+            }else if(text.length() >= COMMAND_START.length() && text.substring(0, COMMAND_START.length()).equals(COMMAND_START)){
+                return COMMAND_START;
+            }else{
+                return "invalid";
+            }
         }
     }
 

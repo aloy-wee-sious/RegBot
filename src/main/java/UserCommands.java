@@ -1,3 +1,4 @@
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**
@@ -27,7 +28,7 @@ public class UserCommands {
 
     public static ArrayList<User> addme(ArrayList<User> users, ArrayList<User> pending, long id, String firstName, String lastName){
         //FIXME should create an user already exist in list exception
-        if(!users.contains(id) && !pending.contains(id)){
+        if(!isAdded(users, pending, id)){
             pending.add(new User(firstName, lastName, id));
         }
         return pending;
@@ -47,7 +48,7 @@ public class UserCommands {
 
     public static String start(){
         String result = "Hi welcome to RegBot! If your are a new user, use /addme to request access permission from admin\n" +
-                        "The current admin is " + AdminCommands.getName() + "\n Or for existing user, use /help to see the list of commands";
+                        "The current admin is " + AdminCommands.getAdmins() + "\n Or for existing user, use /help to see the list of commands";
         return result;
     }
 
@@ -58,5 +59,19 @@ public class UserCommands {
             }
         }
         return -1;
+    }
+
+    private static boolean isAdded(ArrayList<User> users, ArrayList<User> pendingUsers, long id){
+        for(User user: users){
+            if(user.getUserId() == id){
+                return true;
+            }
+        }
+        for(User pendingUser : pendingUsers){
+            if(pendingUser.getUserId() == id){
+                return true;
+            }
+        }
+        return false;
     }
 }

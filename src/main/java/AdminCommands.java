@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Created by aloysius on 9/21/16.
@@ -14,8 +15,7 @@ public class AdminCommands {
     private final String ADMIN_VIEW_REMIND = "/adminremind";
     private final String ADMIN_PUBLISH = "/adminpublish";
     private final String ADMIN_HELP = "/adminhelp";
-    private static long adminId = 226481140;
-    private static String name = "Aloysius";
+    private static ArrayList<User> admins = new ArrayList<>(Arrays.asList(new User("Aloysius", null, Long.parseLong("226481140"))));
 
     public static String viewUsers(ArrayList<User> users){
         String result = "";
@@ -27,23 +27,26 @@ public class AdminCommands {
         return result;
     }
 
-    public static boolean isAdmin(Integer id) {
-        return id == adminId;
+    public static boolean isAdmin(long id) {
+        for(User admin : admins){
+            if(admin.getUserId() == id){
+                return true;
+            }
+        }
+        return false;
     }
 
-    public static String getName() {
-        return name;
+    public static String getAdmins() {
+        String result ="";
+        for(User user: admins){
+            result = result + user.getName() + " ";
+        }
+        return result;
     }
 
-    public static void setName(String name) {
-        AdminCommands.name = name;
-    }
-
-    public static long getAdminId() {
-        return adminId;
-    }
-
-    public static void setAdminId(long adminId) {
-        AdminCommands.adminId = adminId;
+    public static void addAdmin(ArrayList<User> user, int i){
+        if(!admins.contains(user.get(i-1))) {
+            admins.add(user.get(i - 1));
+        }
     }
 }
