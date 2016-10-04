@@ -24,7 +24,7 @@ public class RegBot extends TelegramLongPollingBot {
     private final String COMMAND_ADDME = "/addme";
     private final String COMMAND_START = "/start";
 
-    private ArrayList<User> seekApproval = new ArrayList<User>();
+    private ArrayList<User> seekApproval = new ArrayList<>(Arrays.asList(new User("wait", "longlong", (long)1111111111)));
     private ArrayList<User> myUsers = new ArrayList<User>(Arrays.asList(new User("Aloysius", "Wang", (long)226481140), new User("fakeguy", null, (long)000000000)));
 
     private final String ADMIN_VIEW_USERS = "/adminviewusers";
@@ -62,7 +62,7 @@ public class RegBot extends TelegramLongPollingBot {
                     if(isAdminCommand(message.getText()) && isAdmin){
                         reply = processAdminCommands(command, text);
                     }else{
-                        reply = processUserCommands(command, message.getFrom().getId(), message.getFrom().getFirstName(), message.getFrom().getLastName(), text);
+                        reply = processUserCommands(command, new User( message.getFrom().getFirstName(), message.getFrom().getLastName(), message.getFrom().getId()), text);
                     }
                     sendReply(message, sendMessage, reply);
                 } else if (message.isGroupMessage() && message.getText().contains("@ReggyBot")) {
@@ -80,22 +80,22 @@ public class RegBot extends TelegramLongPollingBot {
         return text.substring(text.indexOf(" ")+1,text.length());
     }
 
-    private String processUserCommands(String command, long id, String firstName, String lastName, String text) {
+    private String processUserCommands(String command, User user, String text) {
         String reply;
         switch(command) {
             case COMMAND_ADD:
                 System.out.println("add text " + text);
-                this.myUsers = UserCommands.add(myUsers,id,text);
+                this.myUsers = UserCommands.add(myUsers, user.getUserId(),text);
                 reply = "added";
                 break;
             case COMMAND_DELETE:
                 reply = "delete";
                 System.out.println("delete number " + text);
-                this.myUsers= UserCommands.delete(myUsers,id,Integer.parseInt(text));
+                this.myUsers= UserCommands.delete(myUsers, user.getUserId(),Integer.parseInt(text));
                 break;
             case COMMAND_VIEW:
-                reply = UserCommands.view(myUsers,id);
-                System.out.println(UserCommands.view(myUsers,id));
+                reply = UserCommands.view(myUsers, user.getUserId());
+                System.out.println(UserCommands.view(myUsers, user.getUserId()));
                 System.out.println("view");
                 break;
             case COMMAND_HELP:
@@ -104,7 +104,7 @@ public class RegBot extends TelegramLongPollingBot {
                 break;
             case COMMAND_ADDME:
                 int before = seekApproval.size();
-                seekApproval = UserCommands.addme(myUsers, seekApproval, id, firstName, lastName);
+                seekApproval = UserCommands.addme(myUsers, seekApproval, user);
                 if(before == seekApproval.size()){
                     System.out.println("no change");
                 }
@@ -123,11 +123,13 @@ public class RegBot extends TelegramLongPollingBot {
 
     private String processAdminCommands(String command, String text) {
         System.out.println("command is " + command);
-        String reply;
+        String reply = "";
         switch(command) {
             case ADMIN_ADD:
                 System.out.println("admin add");
-                reply = ADMIN_ADD;
+                myUsers = AdminCommands.addUser(myUsers, seekApproval, Integer.parseInt(text));
+                seekApproval = AdminCommands.removePending(seekApproval , Integer.parseInt(text));
+                reply = "ok";
                 break;
             case ADMIN_PUBLISH:
                 System.out.println("admin publish");
@@ -139,6 +141,7 @@ public class RegBot extends TelegramLongPollingBot {
                 break;
             case ADMIN_REMOVE_USERS:
                 System.out.println("admin remove user");
+                AdminCommands.removeUser(myUsers, Integer.parseInt(text));
                 reply = ADMIN_REMOVE_USERS;
                 break;
             case ADMIN_VIEW_REMIND:
@@ -155,7 +158,10 @@ public class RegBot extends TelegramLongPollingBot {
                 break;
             case ADMIN_VIEW_PENDING:
                 System.out.println("admin view pending");
-                reply = ADMIN_VIEW_PENDING;
+                reply = AdminCommands.viewPending(seekApproval);
+                if(seekApproval.isEmpty()){
+                    reply = "No users";
+                }
                 break;
             case ADMIN_HELP:
                 System.out.println("admin help");

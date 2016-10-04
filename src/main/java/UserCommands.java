@@ -13,6 +13,7 @@ public class UserCommands {
     private final String COMMAND_ADDME = "/addme";
 
     public static ArrayList<User> add(ArrayList<User> users, long id, String text){
+        //FIXME throw exception when user not approved
         users.get(findUser(users,id)).addRequest(text);
         return users;
     }
@@ -26,10 +27,10 @@ public class UserCommands {
         return users;
     }
 
-    public static ArrayList<User> addme(ArrayList<User> users, ArrayList<User> pending, long id, String firstName, String lastName){
-        //FIXME should create an user already exist in list exception
-        if(!isAdded(users, pending, id)){
-            pending.add(new User(firstName, lastName, id));
+    public static ArrayList<User> addme(ArrayList<User> users, ArrayList<User> pending, User user){
+        //FIXME should create an user already exist in list
+        if(!pending.contains(user) && !users.contains(user)){
+            pending.add(user);
         }
         return pending;
     }
