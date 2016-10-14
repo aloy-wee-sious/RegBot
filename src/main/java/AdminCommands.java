@@ -20,6 +20,10 @@ public class AdminCommands {
             "Please submit your prayer requests here!! Feel free to PM me directly if it's more convenient! Have a great week ahead:)";
 
     public static String viewUsers(ArrayList<User> users){
+        return printUsers(users);
+    }
+
+    private static String printUsers(ArrayList<User> users) {
         String result = "";
         int count =1;
         for(User user: users){
@@ -64,13 +68,7 @@ public class AdminCommands {
     }
 
     public static String viewPending(ArrayList<User> users) {
-        int count = 1;
-        String result = "";
-
-        for(User user : users){
-            result = result + count + ". " + user.getName() + "\n";
-        }
-        return result;
+        return printUsers(users);
     }
 
     public static ArrayList<User> addUser(ArrayList<User> myUsers, ArrayList<User> seekApproval, int i) {
