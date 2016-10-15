@@ -1,9 +1,10 @@
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  * Created by aloysius on 9/19/16.
  */
-public class User {
+public class User implements Serializable{
 
     private ArrayList<String> PRequest;
 

@@ -4,6 +4,7 @@ import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -13,11 +14,10 @@ import java.util.Arrays;
 public class RegBot extends TelegramLongPollingBot {
 
     private BotConfig config;
-    public RegBot(String input) {
+    public RegBot(String input) throws IOException, ClassNotFoundException {
         this.config = new BotConfig(input);
+        load();
     }
-
-
     private ArrayList<User> seekApproval = new ArrayList<>(Arrays.asList(new User("wait", "longlong", (long)1111111111)));
     private ArrayList<User> myUsers = new ArrayList<User>(Arrays.asList(new User("Aloysius", "Wang", (long)226481140), new User("fakeguy", null, (long)000000000)));
 
@@ -42,6 +42,11 @@ public class RegBot extends TelegramLongPollingBot {
                         text = removeCommand(text);
                         reply = processUserCommands(userCommand, new User( message.getFrom().getFirstName(), message.getFrom().getLastName(), message.getFrom().getId()), text);
                         System.out.println(userCommand);
+                        try {
+                            save(myUsers,seekApproval);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                     boolean isAdmin = AdminCommands.isAdmin(message.getFrom().getId());
                     System.out.println("is admin command " + isAdminCommand(formatText(message.getText())));
@@ -152,7 +157,7 @@ public class RegBot extends TelegramLongPollingBot {
             case ADMIN_NEWADMIN:
                 System.out.println("add new admin");
                 AdminCommands.addAdmin(myUsers, Integer.parseInt(text));
-                reply = AdminCommands.getAdmins().toString();
+                reply = AdminCommands.getAdminsName().toString();
                 break;
             default:
                 reply = command.toString();
@@ -185,6 +190,40 @@ public class RegBot extends TelegramLongPollingBot {
 
     public String getBotUsername() {
         return this.config.getBotUsername();
+    }
+
+    public void save(ArrayList<User> myUsers, ArrayList<User> seekApproval) throws IOException {
+        FileOutputStream fos = new FileOutputStream("myUsers.txt");
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(myUsers);
+        oos.close();
+
+        fos = new FileOutputStream("seekApproval.txt");
+        oos = new ObjectOutputStream(fos);
+        oos.writeObject(seekApproval);
+        oos.close();
+
+        fos = new FileOutputStream("admins.txt");
+        oos = new ObjectOutputStream(fos);
+        oos.writeObject(AdminCommands.getAdmins());
+        oos.close();
+    }
+
+    private void load() throws IOException, ClassNotFoundException {
+        FileInputStream fin= new FileInputStream ("myUsers.txt");
+        ObjectInputStream ois = new ObjectInputStream(fin);
+        myUsers = (ArrayList<User>)ois.readObject();
+        fin.close();
+
+        fin= new FileInputStream ("seekApproval.txt");
+        ois = new ObjectInputStream(fin);
+        seekApproval = (ArrayList<User>)ois.readObject();
+        fin.close();
+
+        fin= new FileInputStream ("admins.txt");
+        ois = new ObjectInputStream(fin);
+        AdminCommands.setAdmins((ArrayList<User>)ois.readObject());
+        fin.close();
     }
 
     @Override

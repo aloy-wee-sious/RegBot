@@ -1,4 +1,3 @@
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**
@@ -49,7 +48,7 @@ public class UserCommands {
 
     public static String start(){
         String result = "Hi welcome to RegBot! If your are a new user, use /addme to request access permission from admin\n" +
-                        "The current admin is " + AdminCommands.getAdmins() + "\n Or for existing user, use /help to see the list of commands";
+                        "The current admin is " + AdminCommands.getAdminsName() + "\n Or for existing user, use /help to see the list of commands";
         return result;
     }
 
