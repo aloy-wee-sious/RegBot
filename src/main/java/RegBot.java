@@ -1,3 +1,5 @@
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Message;
@@ -7,6 +9,7 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by aloysius on 9/19/16.
@@ -14,9 +17,13 @@ import java.util.Arrays;
 public class RegBot extends TelegramLongPollingBot {
 
     private BotConfig config;
-    public RegBot(String input) throws IOException, ClassNotFoundException {
+    public RegBot(String input)  {
         this.config = new BotConfig(input);
-        load();
+        try {
+            load();
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+        }
     }
     private ArrayList<User> seekApproval = new ArrayList<>(Arrays.asList(new User("wait", "longlong", (long)1111111111)));
     private ArrayList<User> myUsers = new ArrayList<User>(Arrays.asList(new User("Aloysius", "Wang", (long)226481140), new User("fakeguy", null, (long)000000000)));
@@ -43,6 +50,7 @@ public class RegBot extends TelegramLongPollingBot {
                         reply = processUserCommands(userCommand, new User( message.getFrom().getFirstName(), message.getFrom().getLastName(), message.getFrom().getId()), text);
                         System.out.println(userCommand);
                         try {
+                            //FIXME to be use after write commands only
                             save(myUsers,seekApproval);
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -193,37 +201,17 @@ public class RegBot extends TelegramLongPollingBot {
     }
 
     public void save(ArrayList<User> myUsers, ArrayList<User> seekApproval) throws IOException {
-        FileOutputStream fos = new FileOutputStream("myUsers.txt");
-        ObjectOutputStream oos = new ObjectOutputStream(fos);
-        oos.writeObject(myUsers);
-        oos.close();
-
-        fos = new FileOutputStream("seekApproval.txt");
-        oos = new ObjectOutputStream(fos);
-        oos.writeObject(seekApproval);
-        oos.close();
-
-        fos = new FileOutputStream("admins.txt");
-        oos = new ObjectOutputStream(fos);
-        oos.writeObject(AdminCommands.getAdmins());
-        oos.close();
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.writeValue(new File("myUsers.json"), myUsers);
+        mapper.writeValue(new File("seekApproval.json"), seekApproval);
+        mapper.writeValue(new File("admins.json"), AdminCommands.getAdmins());
     }
 
-    private void load() throws IOException, ClassNotFoundException {
-        FileInputStream fin= new FileInputStream ("myUsers.txt");
-        ObjectInputStream ois = new ObjectInputStream(fin);
-        myUsers = (ArrayList<User>)ois.readObject();
-        fin.close();
-
-        fin= new FileInputStream ("seekApproval.txt");
-        ois = new ObjectInputStream(fin);
-        seekApproval = (ArrayList<User>)ois.readObject();
-        fin.close();
-
-        fin= new FileInputStream ("admins.txt");
-        ois = new ObjectInputStream(fin);
-        AdminCommands.setAdmins((ArrayList<User>)ois.readObject());
-        fin.close();
+    private void load() throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        myUsers = objectMapper.readValue(new File("myUsers.json"), new TypeReference<List<User>>(){});
+        AdminCommands.setAdmins(objectMapper.readValue(new File("admins.json"), new TypeReference<List<User>>(){}));
+        seekApproval = objectMapper.readValue(new File("seekApproval.json"), new TypeReference<List<User>>(){});
     }
 
     @Override

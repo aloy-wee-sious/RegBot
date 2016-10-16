@@ -7,13 +7,10 @@ import java.util.ArrayList;
 public class User implements Serializable{
 
     private ArrayList<String> PRequest;
-
-    public String getName() {
-        return name;
-    }
-
     private String name;
     private long userId;
+
+    public User(){};
 
     public User(String firstName, String lastName, long userId){
         this.name = firstName;
@@ -22,10 +19,6 @@ public class User implements Serializable{
         }
         this.PRequest = new ArrayList<String>();
         this.userId = userId;
-    }
-
-    public long getUserId(){
-        return this.userId;
     }
 
     public boolean addRequest(String request){
@@ -40,6 +33,38 @@ public class User implements Serializable{
         this.PRequest.remove(num-1);
     }
 
+    ///////////////////////////////////
+    /////// Setters and Getters ///////
+    ///////////////////////////////////
+
+    public long getUserId(){
+        return this.userId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public ArrayList<String> getPRequest() {
+        return PRequest;
+    }
+
+    public void setPRequest(ArrayList<String> PRequest) {
+        this.PRequest = PRequest;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setUserId(long userId) {
+        this.userId = userId;
+    }
+
+    ///////////////////////////////////
+    /////// Overloading methods ///////
+    ///////////////////////////////////
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -53,15 +78,6 @@ public class User implements Serializable{
     @Override
     public int hashCode() {
         return (int) (userId ^ (userId >>> 32));
-    }
-
-    public boolean removeRequest(int input){
-        if(input > PRequest.size()){
-            return false;
-        }else{
-            PRequest.remove(input-1);
-            return true;
-        }
     }
 
     @Override
