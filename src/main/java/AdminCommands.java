@@ -15,7 +15,7 @@ public class AdminCommands {
     private final String ADMIN_VIEW_REMIND = "/adminremind";
     private final String ADMIN_PUBLISH = "/adminpublish";
     private final String ADMIN_HELP = "/adminhelp";
-    private static ArrayList<User> admins = new ArrayList<>(Arrays.asList(new User("Aloysius", null, Long.parseLong("226481140"))));
+    private static ArrayList<User> admins = new ArrayList<>();
     private static String reggyquote = "HI HI! :)\n" +
             "Please submit your prayer requests here!! Feel free to PM me directly if it's more convenient! Have a great week ahead:)";
 

@@ -8,7 +8,6 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -25,8 +24,8 @@ public class RegBot extends TelegramLongPollingBot {
             System.out.println(e.getMessage());
         }
     }
-    private ArrayList<User> seekApproval = new ArrayList<>(Arrays.asList(new User("wait", "longlong", (long)1111111111)));
-    private ArrayList<User> myUsers = new ArrayList<User>(Arrays.asList(new User("Aloysius", "Wang", (long)226481140), new User("fakeguy", null, (long)000000000)));
+    private ArrayList<User> seekApproval = new ArrayList<>();
+    private ArrayList<User> myUsers = new ArrayList<>();
 
 
     public void onUpdateReceived(Update update) {
