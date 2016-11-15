@@ -17,7 +17,7 @@ public class User implements Serializable{
         if(lastName != null){
             this.name = this.name + " " + lastName;
         }
-        this.PRequest = new ArrayList<String>();
+        this.PRequest = new ArrayList<>();
         this.userId = userId;
     }
 
@@ -33,8 +33,12 @@ public class User implements Serializable{
         return !PRequest.isEmpty();
     }
 
-    public void deleteRequest(int num){
-        this.PRequest.remove(num-1);
+    public void deleteRequest(int num) throws InvalidParameterException {
+        try{
+            this.PRequest.remove(num-1);
+        }catch (IndexOutOfBoundsException e){
+            throw new InvalidParameterException("There is not number " + num);
+        }
     }
 
     ///////////////////////////////////

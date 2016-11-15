@@ -6,32 +6,29 @@ import java.util.ArrayList;
  */
 public class UserCommands {
 
-    private final String COMMAND_ADD = "/add";
-    private final String COMMAND_VIEW = "/view";
-    private final String COMMAND_DELETE = "/delete";
-    private final String COMMAND_HELP = "/help";
-    private final String COMMAND_ADDME = "/addme";
-
-    public static ArrayList<User> add(ArrayList<User> users, long id, String text){
-        //FIXME throw exception when user not approved
+    public static ArrayList<User> add(ArrayList<User> users, long id, String text) throws UserNotFoundException {
         users.get(findUser(users,id)).addRequest(text);
         return users;
     }
 
-    public static String view(ArrayList<User> users, long id){
+    public static String view(ArrayList<User> users, long id) throws UserNotFoundException {
         return users.get(findUser(users,id)).toString();
     }
 
-    public static ArrayList<User> delete(ArrayList<User> users, long id, int num){
+    public static ArrayList<User> delete(ArrayList<User> users, long id, int num) throws UserNotFoundException, InvalidParameterException {
         users.get(findUser(users,id)).deleteRequest(num);
         return users;
     }
 
-    public static ArrayList<User> addme(ArrayList<User> users, ArrayList<User> pending, User user){
-        //FIXME should create an user already exist in list
-        if(!pending.contains(user) && !users.contains(user)){
-            pending.add(user);
+    public static ArrayList<User> addme(ArrayList<User> users, ArrayList<User> pending, User user) throws AlreadyExistException {
+        if (pending.contains(user)) {
+            throw new AlreadyExistException("Already exist in pending list");
         }
+
+        if (users.contains(user)) {
+            throw new AlreadyExistException("Already been approved");
+        }
+        pending.add(user);
         return pending;
     }
 
@@ -49,30 +46,17 @@ public class UserCommands {
 
     public static String start(){
         String result = "Hi welcome to RegBot! If your are a new user, use /addme to request access permission from admin\n" +
-                        "The current admin is " + AdminCommands.getAdminsName() + "\nOr for existing user, use /help to see the list of commands";
+                        "The current admin is " + AdminCommands.getAdminsName() +
+                        "\nOr for existing user, use /help to see the list of commands";
         return result;
     }
 
-    private static int findUser(ArrayList<User> users, long id){
+    private static int findUser(ArrayList<User> users, long id) throws UserNotFoundException {
         for(int i =0; i<users.size();i++){
             if(users.get(i).getUserId() == id){
                 return i;
             }
         }
-        return -1;
-    }
-
-    private static boolean isAdded(ArrayList<User> users, ArrayList<User> pendingUsers, long id){
-        for(User user: users){
-            if(user.getUserId() == id){
-                return true;
-            }
-        }
-        for(User pendingUser : pendingUsers){
-            if(pendingUser.getUserId() == id){
-                return true;
-            }
-        }
-        return false;
+        throw new UserNotFoundException("User not found");
     }
 }

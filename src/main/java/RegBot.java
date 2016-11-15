@@ -20,13 +20,17 @@ public class RegBot extends TelegramLongPollingBot {
         this.config = new BotConfig(input);
         try {
             load();
-        }catch(Exception e){
+        } catch(Exception e) {
             System.out.println(e.getMessage());
+            AdminCommands.addDefault();
+            users.add(new User("Aloysius", null, Long.parseLong("226481140")));
         }
+        users.add(new User("fake", "guy", (long)0000000000));
+        approvalList.add(new User("waiting", "guy", (long)111111111));
     }
-    private ArrayList<User> seekApproval = new ArrayList<>();
-    private ArrayList<User> myUsers = new ArrayList<>();
-
+    private ArrayList<User> approvalList = new ArrayList<>();
+    private ArrayList<User> users = new ArrayList<>();
+    private long groupChatID;
 
     public void onUpdateReceived(Update update) {
         if (update.hasMessage()) {
@@ -36,33 +40,38 @@ public class RegBot extends TelegramLongPollingBot {
                 SendMessage sendMessage = new SendMessage();
                 if (message.isUserMessage()) {
                     System.out.println("user pm with text " + message.getText());
-                    String text = formatText(message.getText());
+                    String parameters = formatText(message.getText());
                     String reply = "";
-                    if(Parser.isAdminCommand(text) && AdminCommands.isAdmin(message.getFrom().getId())){
-                        Parser.adminCommands adminCommand = Parser.parseAdminCommand(text);
-                        text = removeCommand(text);
-                        reply = processAdminCommands(adminCommand, text);
-                        System.out.println(adminCommand);
-                    }else{
-                        Parser.userCommands userCommand = Parser.parseUserCommand(text);
-                        text = removeCommand(text);
-                        reply = processUserCommands(userCommand, new User( message.getFrom().getFirstName(), message.getFrom().getLastName(), message.getFrom().getId()), text);
-                        System.out.println(userCommand);
+                    if(Parser.isAdminCommand(parameters) && AdminCommands.isAdmin(message.getFrom().getId())){
+                        Parser.adminCommands adminCommand = Parser.parseAdminCommand(parameters);
+                        parameters = removeCommand(parameters);
                         try {
-                            //FIXME to be use after write commands only
-                            save(myUsers,seekApproval);
+                            reply = processAdminCommands(adminCommand, parameters);
                         } catch (IOException e) {
                             e.printStackTrace();
+                        } catch (Exception ex) {
+                            reply = ex.getMessage();
+                        }
+                    }else{
+                        Parser.userCommands userCommand = Parser.parseUserCommand(parameters);
+                        parameters = removeCommand(parameters);
+                        try {
+                            reply = processUserCommands(userCommand, new User( message.getFrom().getFirstName(), message.getFrom().getLastName(), message.getFrom().getId()), parameters);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (Exception ex) {
+                            reply = ex.getMessage();
                         }
                     }
-                    boolean isAdmin = AdminCommands.isAdmin(message.getFrom().getId());
-                    System.out.println("is admin command " + isAdminCommand(formatText(message.getText())));
-                    System.out.println("is admin " + isAdmin+"");
                     sendReply(message, sendMessage, reply);
-                } else if (message.isGroupMessage() && message.getText().contains("@ReggyBot")) {
-                    String reply = formatText(message.getText());
-                    System.out.println("someone one mentioned me with text " + message.getText());
-                    sendReply(message, sendMessage, reply);
+                } else if (message.isGroupMessage() && Parser.isAdminCommand(formatText(message.getText())) && Parser.parseAdminCommand(formatText(message.getText())).equals(Parser.adminCommands.ADMIN_ADD_GROUP) && AdminCommands.isAdmin(message.getFrom().getId())) {
+                    groupChatID = message.getChatId();
+                    try {
+                        save();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    sendReply(message, sendMessage, "Added group");
                 }
 
             }
@@ -74,117 +83,100 @@ public class RegBot extends TelegramLongPollingBot {
         return text.substring(text.indexOf(" ")+1,text.length());
     }
 
-    private String processUserCommands(Parser.userCommands command, User user, String text) {
+    private String processUserCommands(Parser.userCommands command, User user, String text) throws IOException, UserNotFoundException, InvalidParameterException, AlreadyExistException {
         String reply;
         switch(command) {
             case COMMAND_ADD:
-                System.out.println("add text " + text);
-                this.myUsers = UserCommands.add(myUsers, user.getUserId(),text);
-                reply = "added";
+                this.users = UserCommands.add(users, user.getUserId(),text);
+                save();
+                reply = "Request added";
                 break;
             case COMMAND_DELETE:
-                reply = "delete";
-                System.out.println("delete number " + text);
-                this.myUsers= UserCommands.delete(myUsers, user.getUserId(),Integer.parseInt(text));
+                //System.out.println("delete number " + text);
+                this.users = UserCommands.delete(users, user.getUserId(),Integer.parseInt(text));
+                save();;
+                reply = "Request deleted";
                 break;
             case COMMAND_VIEW:
-                reply = UserCommands.view(myUsers, user.getUserId());
-                System.out.println(UserCommands.view(myUsers, user.getUserId()));
-                System.out.println("view");
+                reply = UserCommands.view(users, user.getUserId());
                 break;
             case COMMAND_HELP:
                 reply = UserCommands.help();
-                System.out.println("help");
                 break;
             case COMMAND_ADDME:
-                int before = seekApproval.size();
-                seekApproval = UserCommands.addme(myUsers, seekApproval, user);
-                if(before == seekApproval.size()){
-                    System.out.println("no change");
-                }
-                reply = "ok";
-                System.out.println("addme");
+                approvalList = UserCommands.addme(users, approvalList, user);
+                save();;
+                reply = "Added to waiting list for admin approval";
                 break;
             case COMMAND_START:
                 reply = UserCommands.start();
                 break;
             default:
-                reply = "invalid";
+                reply = "Invalid command";
                 break;
         }
         return reply;
     }
 
-    private String processAdminCommands(Parser.adminCommands command, String text) {
-        System.out.println("command is " + command);
-        String reply = "";
+    private String processAdminCommands(Parser.adminCommands command, String text) throws IOException, InvalidParameterException {
+        String reply = "Invalid command";
         switch(command) {
             case ADMIN_ADD:
                 System.out.println("admin add");
-                myUsers = AdminCommands.addUser(myUsers, seekApproval, Integer.parseInt(text));
-                seekApproval = AdminCommands.removePending(seekApproval , Integer.parseInt(text));
-                reply = "ok";
+                users = AdminCommands.addUser(users, approvalList, Integer.parseInt(text));
+                approvalList = AdminCommands.removePending(approvalList, Integer.parseInt(text));
+                save();;
+                reply = "User added";
                 break;
             case ADMIN_PUBLISH:
-                System.out.println("admin publish");
+                //TODO
                 reply = "admin publish";
                 break;
             case ADMIN_REMOVE_PENDING:
-                seekApproval = AdminCommands.removePending(seekApproval , Integer.parseInt(text));
-                reply = "remove pending";
+                approvalList = AdminCommands.removePending(approvalList, Integer.parseInt(text));
+                save();;
+                reply = "User removed";
                 break;
             case ADMIN_REMOVE_USERS:
-                System.out.println("admin remove user");
-                AdminCommands.removeUser(myUsers, Integer.parseInt(text));
-                reply = "remove user";
+                AdminCommands.removeUser(users, Integer.parseInt(text));
+                save();;
+                reply = "User removed";
                 break;
             case ADMIN_REMIND:
-                System.out.println("admin remind user");
-                reply = "need remind\n"+ AdminCommands.remind(myUsers);
+                reply = "need remind\n"+ AdminCommands.remind(users);
                 break;
             case ADMIN_VIEW_REQUEST:
+                //TODO
+                reply = AdminCommands.viewRequest(users);
                 System.out.println("admin view request");
-                reply = "request";
                 break;
             case ADMIN_VIEW_USERS:
-                System.out.println("admin view users");
-                reply = AdminCommands.viewUsers(myUsers);
+                reply = AdminCommands.viewUsers(users);
                 break;
             case ADMIN_VIEW_PENDING:
-                System.out.println("admin view pending");
-                reply = AdminCommands.viewPending(seekApproval);
-                if(seekApproval.isEmpty()){
-                    reply = "No users";
-                }
+                reply = AdminCommands.viewPending(approvalList);
                 break;
             case ADMIN_HELP:
-                System.out.println("admin help");
                 reply = AdminCommands.help();
                 break;
             case ADMIN_NEWADMIN:
-                System.out.println("add new admin");
-                AdminCommands.addAdmin(myUsers, Integer.parseInt(text));
+                AdminCommands.addAdmin(users, Integer.parseInt(text));
+                save();;
                 reply = AdminCommands.getAdminsName().toString();
                 break;
+            case ADMIN_INVALID:
+                break;
             default:
-                reply = command.toString();
                 break;
         }
         return reply;
-    }
-
-    private boolean isAdminCommand(String text) {
-        if(text.length()>"/admin".length()) {
-            return text.substring(0, "/admin".length()).equals("/admin");
-        }else{
-            return false;
-        }
     }
 
     private String formatText(String input){
         String result = input.trim().replaceAll(" +", " ").replace("@ReggyBot ", "");
         return result;
     }
+
     private void sendReply(Message message, SendMessage sendMessage, String reply) {
         sendMessage.setChatId(message.getChatId().toString());
         sendMessage.setText(reply);
@@ -199,18 +191,27 @@ public class RegBot extends TelegramLongPollingBot {
         return this.config.getBotUsername();
     }
 
-    public void save(ArrayList<User> myUsers, ArrayList<User> seekApproval) throws IOException {
+    public void save() throws IOException {
+
+        File directory = new File("ReggyBot");
+
+        if (!directory.exists()) {
+            directory.mkdir();
+        }
+
         ObjectMapper mapper = new ObjectMapper();
-        mapper.writeValue(new File("myUsers.json"), myUsers);
-        mapper.writeValue(new File("seekApproval.json"), seekApproval);
-        mapper.writeValue(new File("admins.json"), AdminCommands.getAdmins());
+        mapper.writeValue(new File("ReggyBot/users.json"), users);
+        mapper.writeValue(new File("ReggyBot/approvalList.json"), approvalList);
+        mapper.writeValue(new File("ReggyBot/admins.json"), AdminCommands.getAdmins());
+        mapper.writeValue(new File("ReggyBot/groupID.json"), groupChatID);
     }
 
     private void load() throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
-        myUsers = objectMapper.readValue(new File("myUsers.json"), new TypeReference<List<User>>(){});
-        AdminCommands.setAdmins(objectMapper.readValue(new File("admins.json"), new TypeReference<List<User>>(){}));
-        seekApproval = objectMapper.readValue(new File("seekApproval.json"), new TypeReference<List<User>>(){});
+        users = objectMapper.readValue(new File("ReggyBot/users.json"), new TypeReference<List<User>>(){});
+        AdminCommands.setAdmins(objectMapper.readValue(new File("ReggyBot/admins.json"), new TypeReference<List<User>>(){}));
+        approvalList = objectMapper.readValue(new File("ReggyBot/approvalList.json"), new TypeReference<List<User>>(){});
+        groupChatID = objectMapper.readValue(new File("ReggyBot/groupID.json"), Long.TYPE);
     }
 
     @Override

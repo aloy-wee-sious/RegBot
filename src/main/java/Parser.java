@@ -11,8 +11,8 @@ public class Parser {
     private static final String COMMAND_START = "/start";
 
     private static final String ADMIN_VIEW_USERS = "/viewusers";
-    private static final String ADMIN_ADD = "/approveusers";
-    private static final String ADMIN_REMOVE_USERS = "/removeuser";
+    private static final String ADMIN_ADD = "/approve";
+    private static final String ADMIN_REMOVE_USERS = "/remove";
 
     private static final String ADMIN_VIEW_PENDING = "/viewpending";
     private static final String ADMIN_REMOVE_PENDING = "/removepending";
@@ -20,6 +20,7 @@ public class Parser {
     private static final String ADMIN_VIEW_REQUEST = "/viewrequest";
     private static final String ADMIN_VIEW_REMIND = "/remind";
     private static final String ADMIN_PUBLISH = "/publish";
+    private static final String ADMIN_ADD_GROUP = "/addgroup";
 
     private static final String ADMIN_NEWADMIN = "/newadmin";
     private static final String ADMIN_HELP = "/adminhelp";
@@ -45,7 +46,8 @@ public class Parser {
         ADMIN_PUBLISH,
         ADMIN_HELP,
         ADMIN_NEWADMIN,
-        ADMIN_INVALID
+        ADMIN_INVALID,
+        ADMIN_ADD_GROUP
     }
 
     public static adminCommands parseAdminCommand(String command){
@@ -69,6 +71,8 @@ public class Parser {
                 return adminCommands.ADMIN_PUBLISH;
             case ADMIN_NEWADMIN:
                 return adminCommands.ADMIN_NEWADMIN;
+            case ADMIN_ADD_GROUP:
+                return adminCommands.ADMIN_ADD_GROUP;
             case ADMIN_HELP:
                 return adminCommands.ADMIN_HELP;
             default:
@@ -117,6 +121,8 @@ public class Parser {
             case ADMIN_PUBLISH:
                 return true;
             case ADMIN_NEWADMIN:
+                return true;
+            case ADMIN_ADD_GROUP:
                 return true;
             case ADMIN_HELP:
                 return true;
