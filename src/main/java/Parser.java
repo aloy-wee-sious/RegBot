@@ -10,18 +10,18 @@ public class Parser {
     private static final String COMMAND_ADDME = "/addme";
     private static final String COMMAND_START = "/start";
 
-    private static final String ADMIN_VIEW_USERS = "/adminviewusers";
-    private static final String ADMIN_ADD = "/adminadd";
-    private static final String ADMIN_REMOVE_USERS = "/adminremoveuser";
+    private static final String ADMIN_VIEW_USERS = "/viewusers";
+    private static final String ADMIN_ADD = "/approveusers";
+    private static final String ADMIN_REMOVE_USERS = "/removeuser";
 
-    private static final String ADMIN_VIEW_PENDING = "/adminviewpending";
-    private static final String ADMIN_REMOVE_PENDING = "/adminremovepending";
+    private static final String ADMIN_VIEW_PENDING = "/viewpending";
+    private static final String ADMIN_REMOVE_PENDING = "/removepending";
 
-    private static final String ADMIN_VIEW_REQUEST = "/adminviewrequest";
-    private static final String ADMIN_VIEW_REMIND = "/adminremind";
-    private static final String ADMIN_PUBLISH = "/adminpublish";
+    private static final String ADMIN_VIEW_REQUEST = "/viewrequest";
+    private static final String ADMIN_VIEW_REMIND = "/remind";
+    private static final String ADMIN_PUBLISH = "/publish";
 
-    private static final String ADMIN_NEWADMIN = "/adminnew";
+    private static final String ADMIN_NEWADMIN = "/newadmin";
     private static final String ADMIN_HELP = "/adminhelp";
 
     public enum userCommands{
@@ -41,7 +41,7 @@ public class Parser {
         ADMIN_VIEW_PENDING,
         ADMIN_REMOVE_PENDING,
         ADMIN_VIEW_REQUEST,
-        ADMIN_VIEW_REMIND,
+        ADMIN_REMIND,
         ADMIN_PUBLISH,
         ADMIN_HELP,
         ADMIN_NEWADMIN,
@@ -64,7 +64,7 @@ public class Parser {
             case ADMIN_VIEW_REQUEST:
                 return adminCommands.ADMIN_VIEW_REQUEST;
             case ADMIN_VIEW_REMIND:
-                return adminCommands.ADMIN_VIEW_REMIND;
+                return adminCommands.ADMIN_REMIND;
             case ADMIN_PUBLISH:
                 return adminCommands.ADMIN_PUBLISH;
             case ADMIN_NEWADMIN:
@@ -98,7 +98,31 @@ public class Parser {
 
     public static boolean isAdminCommand(String command){
         command = tokenize(command);
-        return command.contains("admin");
+
+        switch (command) {
+            case ADMIN_VIEW_USERS:
+                return true;
+            case ADMIN_ADD:
+                return true;
+            case ADMIN_REMOVE_USERS:
+                return true;
+            case ADMIN_VIEW_PENDING:
+                return true;
+            case ADMIN_REMOVE_PENDING:
+                return true;
+            case ADMIN_VIEW_REQUEST:
+                return true;
+            case ADMIN_VIEW_REMIND:
+                return true;
+            case ADMIN_PUBLISH:
+                return true;
+            case ADMIN_NEWADMIN:
+                return true;
+            case ADMIN_HELP:
+                return true;
+            default:
+                return false;
+        }
     }
 
     private static String tokenize(String command){

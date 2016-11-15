@@ -118,7 +118,7 @@ public class RegBot extends TelegramLongPollingBot {
                 reply = "admin publish";
                 break;
             case ADMIN_REMOVE_PENDING:
-                System.out.println("admin remove pending");
+                seekApproval = AdminCommands.removePending(seekApproval , Integer.parseInt(text));
                 reply = "remove pending";
                 break;
             case ADMIN_REMOVE_USERS:
@@ -126,9 +126,9 @@ public class RegBot extends TelegramLongPollingBot {
                 AdminCommands.removeUser(myUsers, Integer.parseInt(text));
                 reply = "remove user";
                 break;
-            case ADMIN_VIEW_REMIND:
+            case ADMIN_REMIND:
                 System.out.println("admin remind user");
-                reply = "admin view remind";
+                reply = "need remind\n"+ AdminCommands.remind(myUsers);
                 break;
             case ADMIN_VIEW_REQUEST:
                 System.out.println("admin view request");
@@ -147,7 +147,7 @@ public class RegBot extends TelegramLongPollingBot {
                 break;
             case ADMIN_HELP:
                 System.out.println("admin help");
-                reply = "admin help";
+                reply = AdminCommands.help();
                 break;
             case ADMIN_NEWADMIN:
                 System.out.println("add new admin");
