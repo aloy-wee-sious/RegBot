@@ -15,11 +15,15 @@ public class AdminCommands {
     private final String ADMIN_VIEW_REMIND = "/adminremind";
     private final String ADMIN_PUBLISH = "/adminpublish";
     private final String ADMIN_HELP = "/adminhelp";
-    private static ArrayList<User> admins = new ArrayList<>();
+    private static ArrayList<User> admins = new ArrayList<>(Arrays.asList(new User("Aloysius", null, Long.parseLong("226481140"))));
     private static String reggyquote = "HI HI! :)\n" +
             "Please submit your prayer requests here!! Feel free to PM me directly if it's more convenient! Have a great week ahead:)";
 
     public static String viewUsers(ArrayList<User> users){
+        return printUsers(users);
+    }
+
+    private static String printUsers(ArrayList<User> users) {
         String result = "";
         int count =1;
         for(User user: users){
@@ -30,8 +34,8 @@ public class AdminCommands {
     }
 
     public static boolean isAdmin(long id) {
-        for(User admin : admins){
-            if(admin.getUserId() == id){
+        for (User admin : admins) {
+            if (admin.getUserId() == id) {
                 return true;
             }
         }
@@ -64,13 +68,7 @@ public class AdminCommands {
     }
 
     public static String viewPending(ArrayList<User> users) {
-        int count = 1;
-        String result = "";
-
-        for(User user : users){
-            result = result + count + ". " + user.getName() + "\n";
-        }
-        return result;
+        return printUsers(users);
     }
 
     public static ArrayList<User> addUser(ArrayList<User> myUsers, ArrayList<User> seekApproval, int i) {
@@ -89,5 +87,34 @@ public class AdminCommands {
 
     public static ArrayList<User> getAdmins() {
         return admins;
+    }
+
+    public static ArrayList<User> remind(ArrayList<User> users){
+        ArrayList<User> remindUsers = new ArrayList<>();
+        for(User user: users){
+            if(!user.haveRequest()){
+                remindUsers.add(user);
+            }
+        }
+        return remindUsers;
+    }
+
+    public static String publish(){
+        return "To-be-done";
+    }
+
+    public static String help(){
+        return "Hello admin below are the list of commands available\n" +
+                "/viewusers to view all existing users\n" +
+                "/approveusers to add users from pending users\n" +
+                "/removeuser to remove existing users\n" +
+                "/viewpending to view pending user\n" +
+                "/removepending to remove users from pending\n" +
+                "/remind to remind users\n" +
+                "/publish to publish\n" +
+                "/newadmin to add user to admin\n"+
+                "/adminhelp to bring up help manual";
+
+
     }
 }

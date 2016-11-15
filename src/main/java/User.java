@@ -29,6 +29,10 @@ public class User implements Serializable{
         PRequest.clear();
     }
 
+    public boolean haveRequest(){
+        return !PRequest.isEmpty();
+    }
+
     public void deleteRequest(int num){
         this.PRequest.remove(num-1);
     }
