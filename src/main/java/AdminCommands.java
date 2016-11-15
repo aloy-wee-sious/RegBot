@@ -42,7 +42,7 @@ public class AdminCommands {
         return false;
     }
 
-    public static String getAdmins() {
+    public static String getAdminsName() {
         String result ="";
         for(User user: admins){
             result = result + user.getName() + " ";
@@ -79,6 +79,14 @@ public class AdminCommands {
     public static ArrayList<User> removePending(ArrayList<User> seekApproval, int i) {
         seekApproval.remove(i-1);
         return seekApproval;
+    }
+
+    public static void setAdmins(ArrayList<User> admins) {
+        AdminCommands.admins = admins;
+    }
+
+    public static ArrayList<User> getAdmins() {
+        return admins;
     }
 
     public static ArrayList<User> remind(ArrayList<User> users){

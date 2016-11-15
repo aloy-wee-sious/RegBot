@@ -1,11 +1,14 @@
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 
+import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by aloysius on 9/19/16.
@@ -13,13 +16,16 @@ import java.util.Arrays;
 public class RegBot extends TelegramLongPollingBot {
 
     private BotConfig config;
-    public RegBot(String input) {
+    public RegBot(String input)  {
         this.config = new BotConfig(input);
+        try {
+            load();
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+        }
     }
-
-
-    private ArrayList<User> seekApproval = new ArrayList<>(Arrays.asList(new User("wait", "longlong", (long)1111111111)));
-    private ArrayList<User> myUsers = new ArrayList<User>(Arrays.asList(new User("Aloysius", "Wang", (long)226481140), new User("fakeguy", null, (long)000000000)));
+    private ArrayList<User> seekApproval = new ArrayList<>();
+    private ArrayList<User> myUsers = new ArrayList<>();
 
 
     public void onUpdateReceived(Update update) {
@@ -42,6 +48,12 @@ public class RegBot extends TelegramLongPollingBot {
                         text = removeCommand(text);
                         reply = processUserCommands(userCommand, new User( message.getFrom().getFirstName(), message.getFrom().getLastName(), message.getFrom().getId()), text);
                         System.out.println(userCommand);
+                        try {
+                            //FIXME to be use after write commands only
+                            save(myUsers,seekApproval);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                     boolean isAdmin = AdminCommands.isAdmin(message.getFrom().getId());
                     System.out.println("is admin command " + isAdminCommand(formatText(message.getText())));
@@ -152,7 +164,7 @@ public class RegBot extends TelegramLongPollingBot {
             case ADMIN_NEWADMIN:
                 System.out.println("add new admin");
                 AdminCommands.addAdmin(myUsers, Integer.parseInt(text));
-                reply = AdminCommands.getAdmins().toString();
+                reply = AdminCommands.getAdminsName().toString();
                 break;
             default:
                 reply = command.toString();
@@ -185,6 +197,20 @@ public class RegBot extends TelegramLongPollingBot {
 
     public String getBotUsername() {
         return this.config.getBotUsername();
+    }
+
+    public void save(ArrayList<User> myUsers, ArrayList<User> seekApproval) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.writeValue(new File("myUsers.json"), myUsers);
+        mapper.writeValue(new File("seekApproval.json"), seekApproval);
+        mapper.writeValue(new File("admins.json"), AdminCommands.getAdmins());
+    }
+
+    private void load() throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        myUsers = objectMapper.readValue(new File("myUsers.json"), new TypeReference<List<User>>(){});
+        AdminCommands.setAdmins(objectMapper.readValue(new File("admins.json"), new TypeReference<List<User>>(){}));
+        seekApproval = objectMapper.readValue(new File("seekApproval.json"), new TypeReference<List<User>>(){});
     }
 
     @Override
