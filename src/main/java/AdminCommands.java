@@ -1,3 +1,6 @@
+import org.telegram.telegrambots.api.methods.send.SendDocument;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -116,9 +119,14 @@ public class AdminCommands {
         return "";
     }
 
-    public static String publish(){
+    public static SendDocument publish(ArrayList<User> users, String chatId){
         //TODO pdf library
-        return "To-be-done";
+        File file = new File("ReggyBot/Request/test.pdf");
+        SendDocument sendDocument = new SendDocument();
+        sendDocument.setNewDocument(file);
+        sendDocument.setChatId(chatId);
+        sendDocument.setCaption("Hey everyone! Here are the prayer requests! Let's be praying for each other regularly despite the busy period!!");
+        return sendDocument;
     }
 
     public static String help(){

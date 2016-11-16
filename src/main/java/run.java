@@ -11,10 +11,10 @@ import java.util.Scanner;
 public class run {
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
-        //Scanner sc = new Scanner(System.in);
-        //System.out.println("enter code");
-        //String token = sc.nextLine();
-        String token = JOptionPane.showInputDialog("Bot token pls");
+        Scanner sc = new Scanner(System.in);
+        System.out.println("enter code");
+        String token = sc.nextLine();
+        //String token = JOptionPane.showInputDialog("Bot token pls");
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
         try {
             telegramBotsApi.registerBot(new RegBot(token));

@@ -1,6 +1,7 @@
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.telegram.telegrambots.TelegramApiException;
+import org.telegram.telegrambots.api.methods.send.SendDocument;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
@@ -53,7 +54,7 @@ public class RegBot extends TelegramLongPollingBot {
                         Parser.adminCommands adminCommand = Parser.parseAdminCommand(parameters);
                         parameters = removeCommand(parameters);
                         try {
-                            reply = processAdminCommands(adminCommand, parameters, message.getFrom().getFirstName());
+                            reply = processAdminCommands(adminCommand, parameters, message.getFrom().getFirstName(), message.getChatId().toString());
                         } catch (Exception e) {
                             reply = handleException(reply, e);
                         }
@@ -132,19 +133,22 @@ public class RegBot extends TelegramLongPollingBot {
         return reply;
     }
 
-    private String processAdminCommands(Parser.adminCommands command, String text, String adminName) throws IOException, InvalidParameterException {
+    private String processAdminCommands(Parser.adminCommands command, String text, String adminName, String chatId) throws IOException, InvalidParameterException {
         String reply = "Invalid command";
         logger.info(adminName + " " + command);
         switch(command) {
             case ADMIN_ADD:
-                System.out.println("admin add");
                 users = AdminCommands.addUser(users, approvalList, Integer.parseInt(text));
                 approvalList = AdminCommands.removePending(approvalList, Integer.parseInt(text));
-                save();;
+                save();
                 reply = "User added";
                 break;
             case ADMIN_PUBLISH:
-                //TODO
+                try {
+                    sendDocument(AdminCommands.publish(users, chatId));
+                } catch (TelegramApiException e) {
+                    logger.warning("Exception " + e.getStackTrace());
+                }
                 reply = "admin publish";
                 break;
             case ADMIN_REMOVE_PENDING:
@@ -198,7 +202,7 @@ public class RegBot extends TelegramLongPollingBot {
         try {
             sendMessage(sendMessage);
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            logger.warning("Exception " + e.getStackTrace());
         }
     }
 
@@ -219,6 +223,12 @@ public class RegBot extends TelegramLongPollingBot {
         if (!directory.exists()) {
             directory.mkdir();
         }
+
+        File requestDirectory = new File("ReggyBot/Request");
+        if (!requestDirectory.exists()) {
+            requestDirectory.mkdir();
+        }
+
         DateFormat dateFormat = new SimpleDateFormat("dd:MM:yy_HH-mm-ss");
         handler = new FileHandler("ReggyBot/" + dateFormat.format(new Date()) +".log");
         logger.addHandler(handler);
