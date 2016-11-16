@@ -26,7 +26,7 @@ public class RegBot extends TelegramLongPollingBot {
     private BotConfig config;
     private ArrayList<User> approvalList = new ArrayList<>();
     private ArrayList<User> users = new ArrayList<>();
-    private long groupChatID;
+    private long groupChatID = -1;
 
     public RegBot(String input)  {
         this.config = new BotConfig(input);

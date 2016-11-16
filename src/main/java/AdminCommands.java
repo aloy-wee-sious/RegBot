@@ -111,7 +111,13 @@ public class AdminCommands {
         return remindUsers;
     }
 
+    public static String newWeek(){
+        //TODO new week
+        return "";
+    }
+
     public static String publish(){
+        //TODO pdf library
         return "To-be-done";
     }
 
