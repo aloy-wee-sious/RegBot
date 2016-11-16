@@ -146,7 +146,7 @@ public class RegBot extends TelegramLongPollingBot {
             case ADMIN_PUBLISH:
                 try {
                     sendDocument(AdminCommands.publish(users, chatId));
-                } catch (TelegramApiException e) {
+                } catch (Exception e) {
                     logger.warning("Exception " + e.getStackTrace());
                 }
                 reply = "admin publish";
@@ -229,8 +229,13 @@ public class RegBot extends TelegramLongPollingBot {
             requestDirectory.mkdir();
         }
 
-        DateFormat dateFormat = new SimpleDateFormat("dd:MM:yy_HH-mm-ss");
-        handler = new FileHandler("ReggyBot/" + dateFormat.format(new Date()) +".log");
+        File logsDirectory = new File("ReggyBot/Logs");
+        if (!logsDirectory.exists()) {
+            logsDirectory.mkdir();
+        }
+
+        DateFormat dateFormat = new SimpleDateFormat("dd:MM:yy_HH.mm.ss");
+        handler = new FileHandler(logsDirectory + "/" + dateFormat.format(new Date()) +".log");
         logger.addHandler(handler);
         SimpleFormatter formatter = new SimpleFormatter();
         handler.setFormatter(formatter);

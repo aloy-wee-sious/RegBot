@@ -6,7 +6,7 @@ import java.util.ArrayList;
  */
 public class User implements Serializable{
 
-    private ArrayList<String> PRequest;
+    private ArrayList<String> requests;
     private String name;
     private long userId;
 
@@ -17,28 +17,37 @@ public class User implements Serializable{
         if(lastName != null){
             this.name = this.name + " " + lastName;
         }
-        this.PRequest = new ArrayList<>();
+        this.requests = new ArrayList<>();
         this.userId = userId;
     }
 
     public boolean addRequest(String request){
-        return this.PRequest.add(request);
+        return this.requests.add(request);
     }
 
     public void clearRequest(){
-        PRequest.clear();
+        requests.clear();
     }
 
     public boolean haveRequest(){
-        return !PRequest.isEmpty();
+        return !requests.isEmpty();
     }
 
     public void deleteRequest(int num) throws InvalidParameterException {
         try{
-            this.PRequest.remove(num-1);
+            this.requests.remove(num-1);
         }catch (IndexOutOfBoundsException e){
             throw new InvalidParameterException("There is not number " + num);
         }
+    }
+
+
+    public String printRequest (){
+        String result = "";
+        for (int i = 0; i < requests.size(); i++) {
+            result = result + (i + 1) + ". " + requests.get(i) + "\n";
+        }
+        return result;
     }
 
     ///////////////////////////////////
@@ -53,12 +62,12 @@ public class User implements Serializable{
         return name;
     }
 
-    public ArrayList<String> getPRequest() {
-        return PRequest;
+    public ArrayList<String> getRequests() {
+        return requests;
     }
 
-    public void setPRequest(ArrayList<String> PRequest) {
-        this.PRequest = PRequest;
+    public void setRequests(ArrayList<String> requests) {
+        this.requests = requests;
     }
 
     public void setName(String name) {
@@ -92,13 +101,13 @@ public class User implements Serializable{
     public String toString() {
         int count = 1;
         String result = name + "\n";
-        for(String request: PRequest){
+        for(String request: this.requests){
             result = result + "    " + count + ". " + request + "\n";
             count++;
         }
 
-        if(PRequest.isEmpty()){
-            result = result + "    No request submitted";
+        if(requests.isEmpty()){
+            result = result + "    No requests submitted";
         }
         return result;
     }

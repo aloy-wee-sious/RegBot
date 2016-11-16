@@ -1,8 +1,15 @@
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 import org.telegram.telegrambots.api.methods.send.SendDocument;
-
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Date;
 
 /**
  * Created by aloysius on 9/21/16.
@@ -119,14 +126,49 @@ public class AdminCommands {
         return "";
     }
 
-    public static SendDocument publish(ArrayList<User> users, String chatId){
-        //TODO pdf library
-        File file = new File("ReggyBot/Request/test.pdf");
+    public static SendDocument publish(ArrayList<User> users, String chatId) throws FileNotFoundException, DocumentException {
+
+        DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd");
+        String fileName = "ReggyBot/Request/" + dateFormat.format(new Date())+".pdf";
+        File file = new File(fileName);
+
+        createPDF(users, fileName);
+
+
         SendDocument sendDocument = new SendDocument();
         sendDocument.setNewDocument(file);
         sendDocument.setChatId(chatId);
         sendDocument.setCaption("Hey everyone! Here are the prayer requests! Let's be praying for each other regularly despite the busy period!!");
         return sendDocument;
+    }
+
+    private static void createPDF(ArrayList<User> users, String fileName) throws DocumentException, FileNotFoundException {
+        Document document = new Document(PageSize.A4, 40, 40 ,40 ,40);
+        PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(fileName));
+        document.open();
+        PdfPTable table = new PdfPTable(2);
+        table.setTotalWidth(new float[]{ (PageSize.A4.getWidth()-80)/4, (PageSize.A4.getWidth()-80)*3/4});
+        table.setLockedWidth(true);
+
+
+        table.addCell("Name:");
+        table.addCell("Request:");
+
+        PdfPCell cell = new PdfPCell();
+        cell.setVerticalAlignment(Element.ALIGN_BOTTOM);
+        cell.setPadding(5);
+
+        for(User user : users){
+            if(user.haveRequest()) {
+                cell.setPhrase(new Phrase(user.getName()));
+                table.addCell(cell);
+                cell.setPhrase(new Phrase(user.printRequest()));
+                table.addCell(cell);
+            }
+        }
+
+        document.add(table);
+        document.close();
     }
 
     public static String help(){
