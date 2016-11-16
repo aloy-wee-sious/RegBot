@@ -7,30 +7,38 @@ import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 
 import java.io.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 /**
  * Created by aloysius on 9/19/16.
  */
 public class RegBot extends TelegramLongPollingBot {
 
+    private Logger logger = Logger.getLogger(RegBot.class.getName());
+    private FileHandler handler;
     private BotConfig config;
+    private ArrayList<User> approvalList = new ArrayList<>();
+    private ArrayList<User> users = new ArrayList<>();
+    private long groupChatID;
+
     public RegBot(String input)  {
         this.config = new BotConfig(input);
         try {
             load();
         } catch(Exception e) {
-            System.out.println(e.getMessage());
-            AdminCommands.addDefault();
-            users.add(new User("Aloysius", null, Long.parseLong("226481140")));
+            logger.warning("Exception " + e.getStackTrace());
         }
+        //FIXME for testing
         users.add(new User("fake", "guy", (long)0000000000));
         approvalList.add(new User("waiting", "guy", (long)111111111));
     }
-    private ArrayList<User> approvalList = new ArrayList<>();
-    private ArrayList<User> users = new ArrayList<>();
-    private long groupChatID;
 
     public void onUpdateReceived(Update update) {
         if (update.hasMessage()) {
@@ -39,28 +47,23 @@ public class RegBot extends TelegramLongPollingBot {
             if (message.hasText()) {
                 SendMessage sendMessage = new SendMessage();
                 if (message.isUserMessage()) {
-                    System.out.println("user pm with text " + message.getText());
                     String parameters = formatText(message.getText());
                     String reply = "";
                     if(Parser.isAdminCommand(parameters) && AdminCommands.isAdmin(message.getFrom().getId())){
                         Parser.adminCommands adminCommand = Parser.parseAdminCommand(parameters);
                         parameters = removeCommand(parameters);
                         try {
-                            reply = processAdminCommands(adminCommand, parameters);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        } catch (Exception ex) {
-                            reply = ex.getMessage();
+                            reply = processAdminCommands(adminCommand, parameters, message.getFrom().getFirstName());
+                        } catch (Exception e) {
+                            reply = handleException(reply, e);
                         }
                     }else{
                         Parser.userCommands userCommand = Parser.parseUserCommand(parameters);
                         parameters = removeCommand(parameters);
                         try {
                             reply = processUserCommands(userCommand, new User( message.getFrom().getFirstName(), message.getFrom().getLastName(), message.getFrom().getId()), parameters);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        } catch (Exception ex) {
-                            reply = ex.getMessage();
+                        } catch (Exception e) {
+                            reply = handleException(reply, e);
                         }
                     }
                     sendReply(message, sendMessage, reply);
@@ -69,7 +72,7 @@ public class RegBot extends TelegramLongPollingBot {
                     try {
                         save();
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        logger.warning("Exception " + e.getStackTrace());
                     }
                     sendReply(message, sendMessage, "Added group");
                 }
@@ -79,12 +82,23 @@ public class RegBot extends TelegramLongPollingBot {
         }
     }
 
+    private String handleException(String reply, Exception e) {
+        if (e.getClass() == InvalidParameterException.class || e.getClass() == UserNotFoundException.class || e.getClass() == AlreadyExistException.class) {
+            reply = e.getMessage();
+            logger.info("Invalid user action " + e.getMessage());
+        } else {
+            logger.warning("Exception " + e.getStackTrace());
+        }
+        return reply;
+    }
+
     private String removeCommand(String text) {
         return text.substring(text.indexOf(" ")+1,text.length());
     }
 
     private String processUserCommands(Parser.userCommands command, User user, String text) throws IOException, UserNotFoundException, InvalidParameterException, AlreadyExistException {
         String reply;
+        logger.info(user.getName() + " " + command) ;
         switch(command) {
             case COMMAND_ADD:
                 this.users = UserCommands.add(users, user.getUserId(),text);
@@ -118,8 +132,9 @@ public class RegBot extends TelegramLongPollingBot {
         return reply;
     }
 
-    private String processAdminCommands(Parser.adminCommands command, String text) throws IOException, InvalidParameterException {
+    private String processAdminCommands(Parser.adminCommands command, String text, String adminName) throws IOException, InvalidParameterException {
         String reply = "Invalid command";
+        logger.info(adminName + " " + command);
         switch(command) {
             case ADMIN_ADD:
                 System.out.println("admin add");
@@ -192,13 +207,6 @@ public class RegBot extends TelegramLongPollingBot {
     }
 
     public void save() throws IOException {
-
-        File directory = new File("ReggyBot");
-
-        if (!directory.exists()) {
-            directory.mkdir();
-        }
-
         ObjectMapper mapper = new ObjectMapper();
         mapper.writeValue(new File("ReggyBot/users.json"), users);
         mapper.writeValue(new File("ReggyBot/approvalList.json"), approvalList);
@@ -207,11 +215,41 @@ public class RegBot extends TelegramLongPollingBot {
     }
 
     private void load() throws Exception {
+        File directory = new File("ReggyBot");
+        if (!directory.exists()) {
+            directory.mkdir();
+        }
+        DateFormat dateFormat = new SimpleDateFormat("dd:MM:yy_HH-mm-ss");
+        handler = new FileHandler("ReggyBot/" + dateFormat.format(new Date()) +".log");
+        logger.addHandler(handler);
+        SimpleFormatter formatter = new SimpleFormatter();
+        handler.setFormatter(formatter);
+
+
         ObjectMapper objectMapper = new ObjectMapper();
-        users = objectMapper.readValue(new File("ReggyBot/users.json"), new TypeReference<List<User>>(){});
-        AdminCommands.setAdmins(objectMapper.readValue(new File("ReggyBot/admins.json"), new TypeReference<List<User>>(){}));
-        approvalList = objectMapper.readValue(new File("ReggyBot/approvalList.json"), new TypeReference<List<User>>(){});
-        groupChatID = objectMapper.readValue(new File("ReggyBot/groupID.json"), Long.TYPE);
+        File userFile = new File("ReggyBot/users.json");
+        if (userFile.exists()) {
+            users = objectMapper.readValue(userFile, new TypeReference<List<User>>() {});
+        } else {
+            users.add(new User("Aloysius", null, Long.parseLong("226481140")));
+        }
+
+        File adminFile = new File("ReggyBot/admins.json");
+        if (adminFile.exists()) {
+            AdminCommands.setAdmins(objectMapper.readValue(new File("ReggyBot/admins.json"), new TypeReference<List<User>>(){}));
+        } else {
+            AdminCommands.addDefault();
+        }
+
+        File approvalListFile = new File("ReggyBot/approvalList.json");
+        if (approvalListFile.exists()) {
+            approvalList = objectMapper.readValue(new File("ReggyBot/approvalList.json"), new TypeReference<List<User>>(){});
+        }
+
+        File groupChatIDFile = new File("ReggyBot/groupID.json");
+        if (groupChatIDFile.exists()) {
+            groupChatID = objectMapper.readValue(new File("ReggyBot/groupID.json"), Long.TYPE);
+        }
     }
 
     @Override
