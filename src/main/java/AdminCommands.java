@@ -18,7 +18,7 @@ public class AdminCommands {
 
     private static ArrayList<User> admins = new ArrayList<>();
     private static String reggyquote = "HI HI! :)\n" +
-            "Please submit your prayer requests here!! Feel free to PM me directly if it's more convenient! Have a great week ahead:)";
+            "Please submit your prayer requests here (@ReggyBot)!! Have a great week ahead:)";
 
     public static String viewUsers(ArrayList<User> users) {
         if (users.isEmpty()) {
@@ -123,7 +123,7 @@ public class AdminCommands {
 
     public static String newWeek(){
         //TODO new week
-        return "";
+        return reggyquote;
     }
 
     public static SendDocument publish(ArrayList<User> users, String chatId) throws FileNotFoundException, DocumentException {
@@ -172,18 +172,16 @@ public class AdminCommands {
     }
 
     public static String help(){
-        return "Hello admin below are the list of commands available\n" +
+        return "Hello admin! Below are the list of commands available\n" +
                 "/viewusers to view all existing users\n" +
-                "/approve to add users from pending users\n" +
-                "/remove to remove existing users\n" +
+                "/newadmin <user list number> to add user to admin\n"+
+                "/remove <user list number> to remove existing users\n" +
                 "/viewpending to view pending user\n" +
-                "/removepending to remove users from pending\n" +
+                "/approve <pending list number> to add users from pending users\n" +
+                "/removepending <pendinglist number> to remove users from pending\n" +
                 "/remind to remind users\n" +
                 "/publish to publish\n" +
-                "/newadmin to add user to admin\n"+
-                "/adminhelp to bring up help manual";
-
-
+                "/newweek to start a new week (All request will be erased! Be sure to publish first!)";
     }
 
     public static String viewRequest(ArrayList<User> myUsers) {

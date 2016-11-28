@@ -1,7 +1,6 @@
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.telegram.telegrambots.TelegramApiException;
-import org.telegram.telegrambots.api.methods.send.SendDocument;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
@@ -144,12 +143,17 @@ public class RegBot extends TelegramLongPollingBot {
                 reply = "User added";
                 break;
             case ADMIN_PUBLISH:
-                try {
-                    sendDocument(AdminCommands.publish(users, chatId));
-                } catch (Exception e) {
-                    logger.warning("Exception " + e.getStackTrace());
+
+                if(groupChatID == -1) {
+                    reply = "No group was set";
+                } else {
+                    try {
+                        sendDocument(AdminCommands.publish(users, groupChatID+""));
+                    } catch (Exception e) {
+                        logger.warning("Exception " + e.getStackTrace());
+                    }
+                    reply = "Published";
                 }
-                reply = "admin publish";
                 break;
             case ADMIN_REMOVE_PENDING:
                 approvalList = AdminCommands.removePending(approvalList, Integer.parseInt(text));
@@ -165,7 +169,6 @@ public class RegBot extends TelegramLongPollingBot {
                 reply = "need remind\n"+ AdminCommands.remind(users);
                 break;
             case ADMIN_VIEW_REQUEST:
-                //TODO
                 reply = AdminCommands.viewRequest(users);
                 System.out.println("admin view request");
                 break;
@@ -183,6 +186,23 @@ public class RegBot extends TelegramLongPollingBot {
                 save();;
                 reply = AdminCommands.getAdminsName().toString();
                 break;
+            case ADMIN_NEW_WEEK:
+                users = UserCommands.newWeek(users);
+                reply = AdminCommands.newWeek();
+
+                if(groupChatID == -1){
+                    reply = "No group was set";
+                } else {
+                    SendMessage sendMessage = new SendMessage();
+                    sendMessage.setChatId(groupChatID+"");
+                    sendMessage.setText(reply);
+                    try {
+                        sendMessage(sendMessage);
+                    } catch (TelegramApiException e) {
+                        logger.warning("Exception " + e.getStackTrace());
+                    }
+                    reply = "ok";
+                }
             case ADMIN_INVALID:
                 break;
             default:
@@ -234,7 +254,7 @@ public class RegBot extends TelegramLongPollingBot {
             logsDirectory.mkdir();
         }
 
-        DateFormat dateFormat = new SimpleDateFormat("dd:MM:yy_HH.mm.ss");
+        DateFormat dateFormat = new SimpleDateFormat("dd_MM_yy_HH.mm.ss");
         handler = new FileHandler(logsDirectory + "/" + dateFormat.format(new Date()) +".log");
         logger.addHandler(handler);
         SimpleFormatter formatter = new SimpleFormatter();

@@ -25,6 +25,8 @@ public class Parser {
     private static final String ADMIN_NEWADMIN = "/newadmin";
     private static final String ADMIN_HELP = "/adminhelp";
 
+    private static final String ADMIN_NEW_WEEK = "/newweek";
+
     public enum userCommands{
         COMMAND_ADD,
         COMMAND_VIEW,
@@ -47,7 +49,8 @@ public class Parser {
         ADMIN_HELP,
         ADMIN_NEWADMIN,
         ADMIN_INVALID,
-        ADMIN_ADD_GROUP
+        ADMIN_ADD_GROUP,
+        ADMIN_NEW_WEEK
     }
 
     public static adminCommands parseAdminCommand(String command){
@@ -75,6 +78,8 @@ public class Parser {
                 return adminCommands.ADMIN_ADD_GROUP;
             case ADMIN_HELP:
                 return adminCommands.ADMIN_HELP;
+            case ADMIN_NEW_WEEK:
+                return adminCommands.ADMIN_NEW_WEEK;
             default:
                 return adminCommands.ADMIN_INVALID;
         }
@@ -126,6 +131,8 @@ public class Parser {
                 return true;
             case ADMIN_HELP:
                 return true;
+            case ADMIN_NEW_WEEK:
+                return  true;
             default:
                 return false;
         }

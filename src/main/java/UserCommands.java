@@ -59,4 +59,11 @@ public class UserCommands {
         }
         throw new UserNotFoundException("User not found");
     }
+
+    public static ArrayList<User> newWeek(ArrayList<User> users) {
+        for(User u : users){
+            u.clearRequest();
+        }
+        return users;
+    }
 }
