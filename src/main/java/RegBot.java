@@ -188,7 +188,7 @@ public class RegBot extends TelegramLongPollingBot {
                 break;
             case ADMIN_NEW_WEEK:
                 users = UserCommands.newWeek(users);
-                reply = AdminCommands.newWeek();
+                reply = AdminCommands.newWeek(users);
 
                 if(groupChatID == -1){
                     reply = "No group was set";

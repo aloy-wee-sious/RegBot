@@ -121,8 +121,11 @@ public class AdminCommands {
         return remindUsers;
     }
 
-    public static String newWeek(){
+    public static String newWeek(ArrayList<User> users){
         //TODO new week
+        for (User user : users) {
+            user.clearRequest();
+        }
         return reggyquote;
     }
 
