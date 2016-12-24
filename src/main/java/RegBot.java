@@ -8,6 +8,7 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 
 import java.io.*;
 import java.text.DateFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,7 +34,7 @@ public class RegBot extends TelegramLongPollingBot {
         try {
             load();
         } catch(Exception e) {
-            logger.warning("Exception " + e.getStackTrace());
+            logger.warning("Exception " + e.getMessage() + "\nUnable to load files\n");
         }
         //FIXME for testing
         users.add(new User("fake", "guy", (long)0000000000));
@@ -72,7 +73,7 @@ public class RegBot extends TelegramLongPollingBot {
                     try {
                         save();
                     } catch (IOException e) {
-                        logger.warning("Exception " + e.getStackTrace());
+                        logger.warning("Exception " + e.getMessage() + "\n\n");
                     }
                     sendReply(message, sendMessage, "Added group");
                 }
@@ -83,11 +84,11 @@ public class RegBot extends TelegramLongPollingBot {
     }
 
     private String handleException(String reply, Exception e) {
-        if (e.getClass() == InvalidParameterException.class || e.getClass() == UserNotFoundException.class || e.getClass() == AlreadyExistException.class) {
+        if (e.getClass() == InvalidParameterException.class || e.getClass() == UserNotFoundException.class || e.getClass() == AlreadyExistException.class || e.getClass() == NumberFormatException.class) {
             reply = e.getMessage();
             logger.info("Invalid user action " + e.getMessage());
         } else {
-            logger.warning("Exception " + e.getStackTrace());
+            logger.warning("Exception " + e.getMessage() + "\n\n");
         }
         return reply;
     }
@@ -98,6 +99,12 @@ public class RegBot extends TelegramLongPollingBot {
 
     private String processUserCommands(Parser.userCommands command, User user, String text) throws IOException, UserNotFoundException, InvalidParameterException, AlreadyExistException {
         String reply;
+        int integer;
+        try {
+            integer = Integer.parseInt(text);
+        } catch (NumberFormatException e) {
+            throw new InvalidParameterException(text + " must include a number and cannot be empty");
+        }
         logger.info(user.getName() + " " + command) ;
         switch(command) {
             case COMMAND_ADD:
@@ -107,7 +114,7 @@ public class RegBot extends TelegramLongPollingBot {
                 break;
             case COMMAND_DELETE:
                 //System.out.println("delete number " + text);
-                this.users = UserCommands.delete(users, user.getUserId(),Integer.parseInt(text));
+                this.users = UserCommands.delete(users, user.getUserId(),integer);
                 save();;
                 reply = "Request deleted";
                 break;
@@ -134,11 +141,17 @@ public class RegBot extends TelegramLongPollingBot {
 
     private String processAdminCommands(Parser.adminCommands command, String text, String adminName, String chatId) throws IOException, InvalidParameterException {
         String reply = "Invalid command";
+        int integer;
+        try {
+            integer = Integer.parseInt(text);
+        } catch (NumberFormatException e) {
+            throw new InvalidParameterException(text + " must include a number and cannot be empty");
+        }
         logger.info(adminName + " " + command);
         switch(command) {
             case ADMIN_ADD:
-                users = AdminCommands.addUser(users, approvalList, Integer.parseInt(text));
-                approvalList = AdminCommands.removePending(approvalList, Integer.parseInt(text));
+                users = AdminCommands.addUser(users, approvalList, integer);
+                approvalList = AdminCommands.removePending(approvalList, integer);
                 save();
                 reply = "User added";
                 break;
@@ -150,18 +163,18 @@ public class RegBot extends TelegramLongPollingBot {
                     try {
                         sendDocument(AdminCommands.publish(users, groupChatID+""));
                     } catch (Exception e) {
-                        logger.warning("Exception " + e.getStackTrace());
+                        logger.warning("Exception " + e.getMessage() + "\n\n");
                     }
                     reply = "Published";
                 }
                 break;
             case ADMIN_REMOVE_PENDING:
-                approvalList = AdminCommands.removePending(approvalList, Integer.parseInt(text));
+                approvalList = AdminCommands.removePending(approvalList, integer);
                 save();;
                 reply = "User removed";
                 break;
             case ADMIN_REMOVE_USERS:
-                AdminCommands.removeUser(users, Integer.parseInt(text));
+                AdminCommands.removeUser(users, integer);
                 save();;
                 reply = "User removed";
                 break;
@@ -182,7 +195,7 @@ public class RegBot extends TelegramLongPollingBot {
                 reply = AdminCommands.help();
                 break;
             case ADMIN_NEWADMIN:
-                AdminCommands.addAdmin(users, Integer.parseInt(text));
+                AdminCommands.addAdmin(users, integer);
                 save();;
                 reply = AdminCommands.getAdminsName().toString();
                 break;
@@ -199,7 +212,7 @@ public class RegBot extends TelegramLongPollingBot {
                     try {
                         sendMessage(sendMessage);
                     } catch (TelegramApiException e) {
-                        logger.warning("Exception " + e.getStackTrace());
+                        logger.warning("Exception " + e.getMessage() + "\n\n");
                     }
                     reply = "ok";
                 }
@@ -222,7 +235,9 @@ public class RegBot extends TelegramLongPollingBot {
         try {
             sendMessage(sendMessage);
         } catch (TelegramApiException e) {
-            logger.warning("Exception " + e.getStackTrace());
+            logger.warning("Exception " + e.getMessage());
+            logger.warning("\n\n");
+
         }
     }
 
