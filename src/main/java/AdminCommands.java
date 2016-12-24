@@ -183,6 +183,7 @@ public class AdminCommands {
                 "/approve <pending list number> to add users from pending users\n" +
                 "/removepending <pendinglist number> to remove users from pending\n" +
                 "/remind to remind users\n" +
+                "/addgroup add selected group to be useed when publish (Use in group chat)\n" +
                 "/publish to publish\n" +
                 "/newweek to start a new week (All request will be erased! Be sure to publish first!)";
     }
