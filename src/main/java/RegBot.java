@@ -99,12 +99,6 @@ public class RegBot extends TelegramLongPollingBot {
 
     private String processUserCommands(Parser.userCommands command, User user, String text) throws IOException, UserNotFoundException, InvalidParameterException, AlreadyExistException {
         String reply;
-        int integer;
-        try {
-            integer = Integer.parseInt(text);
-        } catch (NumberFormatException e) {
-            throw new InvalidParameterException(text + " must include a number and cannot be empty");
-        }
         logger.info(user.getName() + " " + command) ;
         switch(command) {
             case COMMAND_ADD:
@@ -113,8 +107,7 @@ public class RegBot extends TelegramLongPollingBot {
                 reply = "Request added";
                 break;
             case COMMAND_DELETE:
-                //System.out.println("delete number " + text);
-                this.users = UserCommands.delete(users, user.getUserId(),integer);
+                this.users = UserCommands.delete(users, user.getUserId(),text);
                 save();;
                 reply = "Request deleted";
                 break;
@@ -141,17 +134,11 @@ public class RegBot extends TelegramLongPollingBot {
 
     private String processAdminCommands(Parser.adminCommands command, String text, String adminName, String chatId) throws IOException, InvalidParameterException {
         String reply = "Invalid command";
-        int integer;
-        try {
-            integer = Integer.parseInt(text);
-        } catch (NumberFormatException e) {
-            throw new InvalidParameterException(text + " must include a number and cannot be empty");
-        }
         logger.info(adminName + " " + command);
         switch(command) {
             case ADMIN_ADD:
-                users = AdminCommands.addUser(users, approvalList, integer);
-                approvalList = AdminCommands.removePending(approvalList, integer);
+                users = AdminCommands.addUser(users, approvalList, text);
+                approvalList = AdminCommands.removePending(approvalList, text);
                 save();
                 reply = "User added";
                 break;
@@ -169,12 +156,12 @@ public class RegBot extends TelegramLongPollingBot {
                 }
                 break;
             case ADMIN_REMOVE_PENDING:
-                approvalList = AdminCommands.removePending(approvalList, integer);
+                approvalList = AdminCommands.removePending(approvalList, text);
                 save();;
                 reply = "User removed";
                 break;
             case ADMIN_REMOVE_USERS:
-                AdminCommands.removeUser(users, integer);
+                AdminCommands.removeUser(users, text);
                 save();;
                 reply = "User removed";
                 break;
@@ -195,7 +182,7 @@ public class RegBot extends TelegramLongPollingBot {
                 reply = AdminCommands.help();
                 break;
             case ADMIN_NEWADMIN:
-                AdminCommands.addAdmin(users, integer);
+                AdminCommands.addAdmin(users, text);
                 save();;
                 reply = AdminCommands.getAdminsName().toString();
                 break;

@@ -54,28 +54,35 @@ public class AdminCommands {
         return result;
     }
 
-    public static void addAdmin(ArrayList<User> user, int i) throws InvalidParameterException {
-        if(!admins.contains(user.get(i-1))) {
-            admins.add(user.get(i - 1));
-        } else {
-            throw new InvalidParameterException("Users is already an admin");
+    public static void addAdmin(ArrayList<User> user, String text) throws InvalidParameterException {
+        try {
+            int i = Integer.parseInt(text);
+            if (!admins.contains(user.get(i - 1))) {
+                admins.add(user.get(i - 1));
+            } else {
+                throw new InvalidParameterException("Users is already an admin");
+            }
+        } catch (NumberFormatException ex) {
+            throw new InvalidParameterException("Must be a number and not empty");
         }
     }
 
-    public static ArrayList<User> removeUser(ArrayList<User> users, int i) throws InvalidParameterException {
-
-        if (users.size() < i) {
-            throw new InvalidParameterException("The number " + i + " is not valid");
-        }
-
-        for(int j = 0; j < admins.size(); j++){
-            if(admins.get(j).getUserId() == users.get(i-1).getUserId()){
-                admins.remove(j);
-                break;
+    public static ArrayList<User> removeUser(ArrayList<User> users, String text) throws InvalidParameterException {
+        try {
+            int i = Integer.parseInt(text);
+            for (int j = 0; j < admins.size(); j++) {
+                if (admins.get(j).getUserId() == users.get(i - 1).getUserId()) {
+                    admins.remove(j);
+                    break;
+                }
             }
+            users.remove(i - 1);
+            return users;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw new InvalidParameterException("The number " + text + "is invalid");
+        } catch (NumberFormatException ex) {
+            throw new InvalidParameterException("Must be a number and not empty");
         }
-        users.remove(i - 1);
-        return users;
     }
 
     public static String viewPending(ArrayList<User> users) {
@@ -85,20 +92,26 @@ public class AdminCommands {
         return printUsers(users);
     }
 
-    public static ArrayList<User> addUser(ArrayList<User> myUsers, ArrayList<User> seekApproval, int i) throws InvalidParameterException {
+    public static ArrayList<User> addUser(ArrayList<User> myUsers, ArrayList<User> seekApproval, String text) throws InvalidParameterException {
         try {
+            int i = Integer.parseInt(text);
             myUsers.add(seekApproval.get(i - 1));
         } catch (IndexOutOfBoundsException e) {
-            throw new InvalidParameterException("The number " + i + "is not valid");
+            throw new InvalidParameterException("The number " + text + "is not valid");
+        } catch (NumberFormatException ex) {
+            throw new InvalidParameterException("Must be a number and not empty");
         }
         return myUsers;
     }
 
-    public static ArrayList<User> removePending(ArrayList<User> seekApproval, int i) throws InvalidParameterException {
+    public static ArrayList<User> removePending(ArrayList<User> seekApproval, String text) throws InvalidParameterException {
         try {
+            int i = Integer.parseInt(text);
             seekApproval.remove(i - 1);
         } catch (IndexOutOfBoundsException e) {
-            throw new InvalidParameterException("The number " + i + "is not valid");
+            throw new InvalidParameterException("The number " + text + "is not valid");
+        } catch (NumberFormatException ex) {
+            throw new InvalidParameterException("Must be a number and not empty");
         }
         return seekApproval;
     }

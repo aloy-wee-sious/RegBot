@@ -15,7 +15,13 @@ public class UserCommands {
         return users.get(findUser(users,id)).toString();
     }
 
-    public static ArrayList<User> delete(ArrayList<User> users, long id, int num) throws UserNotFoundException, InvalidParameterException {
+    public static ArrayList<User> delete(ArrayList<User> users, long id, String text) throws UserNotFoundException, InvalidParameterException {
+        int num;
+        try {
+            num = Integer.parseInt(text);
+        }catch (NumberFormatException e) {
+            throw new InvalidParameterException("Must be a number and not empty");
+        }
         users.get(findUser(users,id)).deleteRequest(num);
         return users;
     }
